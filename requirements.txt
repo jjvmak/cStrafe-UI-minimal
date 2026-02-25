@@ -1,0 +1,7 @@
+
+# Runtime requirements
+pynput
+
+# Note: `tkinter` is part of the standard library in CPython installers
+# and is not typically installed via pip. On Windows/macOS the
+# official Python installer normally includes `tkinter`.
