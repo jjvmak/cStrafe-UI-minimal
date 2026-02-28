@@ -1,6 +1,6 @@
-from .movement_classifier import MovementClassifier
-from .shot_classification import ShotClassification
-from .axis_state import AxisState
+from .cs2KitchenClassifier.movement_classifier import MovementClassifier
+from .cs2KitchenClassifier.shot_classification import ShotClassification
+from .cs2KitchenClassifier.axis_state import AxisState
 from .base import (
     MovementClassifierInterface,
     ShotClassificationInterface,

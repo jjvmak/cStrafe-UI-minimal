@@ -55,7 +55,7 @@ class Overlay:
     def update_result(self, classification: ShotClassification) -> None:
         label = classification.label
         lines = [f"Classification: {label}"]
-        if label == "Counter‑strafe" and classification.cs_time is not None and classification.shot_delay is not None:
+        if label == "Counter-strafe" and classification.cs_time is not None and classification.shot_delay is not None:
             lines.append(f"CS time: {classification.cs_time:.0f} ms")
             lines.append(f"Shot delay: {classification.shot_delay:.0f} ms")
         elif label == "Overlap" and classification.overlap_time is not None:
@@ -64,7 +64,7 @@ class Overlay:
             lines.append(f"CS time: {classification.cs_time:.0f} ms")
             lines.append(f"Shot delay: {classification.shot_delay:.0f} ms")
         colours = {
-            "Counter‑strafe": "#228b22",
+            "Counter-strafe": "#228b22",
             "Overlap": "#ff8c00",
             "Bad": "#cc0000",
         }

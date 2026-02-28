@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Set, Dict
 
-from .base import AxisStateInterface
+from ..base import AxisStateInterface
 
 
 class AxisState(AxisStateInterface):

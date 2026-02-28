@@ -118,12 +118,12 @@ class InputListener:
     def _build_classification(self, base: ShotClassification, shot_time: float) -> ShotClassification:
         if base.label == "Overlap":
             return ShotClassification(label="Overlap", overlap_time=base.overlap_time)
-        if base.label == "Counter‑strafe":
+        if base.label == "Counter-strafe":
             cs_time = base.cs_time
             shot_delay = base.shot_delay
             if cs_time is not None and shot_delay is not None:
                 if shot_delay > 230.0 or (cs_time > 215.0 and shot_delay > 215.0):
                     return ShotClassification(label="Bad", cs_time=cs_time, shot_delay=shot_delay)
-                return ShotClassification(label="Counter‑strafe", cs_time=cs_time, shot_delay=shot_delay)
+                return ShotClassification(label="Counter-strafe", cs_time=cs_time, shot_delay=shot_delay)
             return ShotClassification(label="Bad")
         return ShotClassification(label="Bad")

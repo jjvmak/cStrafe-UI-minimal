@@ -1,5 +1,5 @@
 from typing import Optional
-from .base import ShotClassificationInterface
+from ..base import ShotClassificationInterface
 
 
 class ShotClassification(ShotClassificationInterface):

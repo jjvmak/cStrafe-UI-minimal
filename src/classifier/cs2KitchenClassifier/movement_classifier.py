@@ -1,7 +1,7 @@
 from typing import Tuple
 from .axis_state import AxisState
 from .shot_classification import ShotClassification
-from .base import MovementClassifierInterface
+from ..base import MovementClassifierInterface
 
 
 class MovementClassifier(MovementClassifierInterface):
