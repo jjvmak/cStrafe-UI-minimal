@@ -7,6 +7,6 @@ pip install -r requirements.txt
 pip install pyinstaller
 
 $addData = "images;images"
-pyinstaller --noconfirm --onefile --noconsole --name "cStrafe_UI" --add-data $addData main.py
+pyinstaller --noconfirm --onefile --noconsole --name "cStrafe_UI" --add-data $addData --paths src src/main.py
 
 Write-Host "Build finished. Expected exe: dist\cStrafe_UI.exe"
