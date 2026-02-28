@@ -179,14 +179,11 @@ class TestClassifyOverlap:
         ax.on_press("D", 120.0)          # overlap_start_time = 120
         ax.on_release("A", 130.0)        # cs_release after overlap
         ax.on_press("D", 130.0)          # re-press — but cs_press_time must be > cs_release
-        # Build a clean CS scenario that satisfies the override condition:
         ax2 = make_axis()
         ax2.on_press("A", 100.0)
         ax2.on_press("D", 120.0)         # overlap_start_time = 120
         ax2.on_release("D", 130.0)       # cs_release_key = D, cs_release_time = 130
         ax2.on_press("A", 140.0)         # cs_press_key = A, cs_press_time = 140 > 130
-        # Now the override condition is met: cs_release_time (130) > overlap_start_time (120)
-        # and cs_press_time (140) > cs_release_time (130)
         label, cs_time, _ = ax2.classify_shot(200.0)
         assert label == "Counter-strafe"
         assert cs_time == pytest.approx(10.0)
@@ -208,7 +205,6 @@ class TestClassifyBad:
         ax = make_axis()
         ax.on_press("A", 100.0)
         label, _, _ = ax.classify_shot(200.0)
-        # cs_release_key is None → Bad
         assert label == "Bad"
 
     def test_reset_called_on_bad(self):
@@ -352,14 +348,12 @@ class TestMovementClassifierPriority:
 
     def test_overlap_beats_bad(self):
         mc = MovementClassifier()
-        # horizontal axis idle → Bad
         shot_time = _do_overlap(mc, "vertical", t0=0.0)
         result = mc.classify_shot(shot_time)
         assert result.label == "Overlap"
 
     def test_counter_strafe_beats_bad(self):
         mc = MovementClassifier()
-        # horizontal axis idle → Bad
         shot_time = _do_cs(mc, "vertical", t0=0.0)
         result = mc.classify_shot(shot_time)
         assert result.label == "Counter-strafe"
@@ -370,15 +364,10 @@ class TestMovementClassifierPriority:
         assert result.label == "Bad"
 
     def test_same_label_tiebreak_by_larger_val(self):
-        """
-        When both axes return Counter-strafe, the one with the larger cs_time wins.
-        """
         mc = MovementClassifier()
-        # Vertical CS: release at 100, press at 170 → cs_time = 70
         mc.on_press("W", 0.0)
         mc.on_release("W", 100.0)
         mc.on_press("S", 170.0)
-        # Horizontal CS: release at 100, press at 140 → cs_time = 40
         mc.on_press("A", 0.0)
         mc.on_release("A", 100.0)
         mc.on_press("D", 140.0)
@@ -436,7 +425,6 @@ class TestEndToEnd:
         mc.on_press("D", 130.0)
         result1 = mc.classify_shot(200.0)
         assert result1.label == "Counter-strafe"
-        # Second shot without new movement → Bad (state was reset)
         result2 = mc.classify_shot(400.0)
         assert result2.label == "Bad"
 

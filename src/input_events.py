@@ -11,12 +11,8 @@ from pynput import keyboard, mouse
 from classifier import MovementClassifier, ShotClassification
 
 try:
-    # Attempt to import user configured keys. The movement_keys module defines
-    # FORWARD, BACKWARD, LEFT and RIGHT constants. If it cannot be imported or
-    # does not define the expected attributes, defaults will be used later.
     from movement_keys import FORWARD, BACKWARD, LEFT, RIGHT  # type: ignore
 except Exception:
-    # Provide dummy values here; real defaults are set below in InputListener
     FORWARD = 'E'  # type: ignore
     BACKWARD = 'D'  # type: ignore
     LEFT = 'S'  # type: ignore
@@ -26,9 +22,6 @@ except Exception:
 class InputListener:
     def __init__(self, overlay: "Overlay") -> None:
         self.overlay = overlay
-        # Determine movement keys from configuration. Use uppercase to
-        # standardise comparisons. Fallback to defaults if the values are
-        # missing or invalid.
         try:
             forward = str(FORWARD)
             backward = str(BACKWARD)
@@ -36,17 +29,14 @@ class InputListener:
             right = str(RIGHT)
         except Exception:
             forward, backward, left, right = 'W', 'S', 'A', 'D'
-        # Ensure single characters and normalise to uppercase
         forward = (forward[0] if forward else 'W').upper()
         backward = (backward[0] if backward else 'S').upper()
         left = (left[0] if left else 'A').upper()
         right = (right[0] if right else 'D').upper()
         self._movement_keys = {forward, backward, left, right}
-        # Initialise classifier with the configured key pairs
         try:
             self.classifier = MovementClassifier(vertical_keys=(forward, backward), horizontal_keys=(left, right))
         except Exception:
-            # Fallback to default WASD if invalid configuration is provided
             self.classifier = MovementClassifier()
         self._lock = threading.Lock()
         self._keyboard_listener: Optional[keyboard.Listener] = None
