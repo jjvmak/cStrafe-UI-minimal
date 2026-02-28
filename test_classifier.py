@@ -121,7 +121,7 @@ class TestClassifyCounterStrafe:
     def test_counter_strafe_label(self):
         ax = self._setup_cs()
         label, _, _ = ax.classify_shot(300.0)
-        assert label == "Counter\u2011strafe"
+        assert label == "Counter-strafe"
 
     def test_counter_strafe_cs_time(self):
         ax = self._setup_cs(release_t=200.0, press_t=250.0)
@@ -188,7 +188,7 @@ class TestClassifyOverlap:
         # Now the override condition is met: cs_release_time (130) > overlap_start_time (120)
         # and cs_press_time (140) > cs_release_time (130)
         label, cs_time, _ = ax2.classify_shot(200.0)
-        assert label == "Counter\u2011strafe"
+        assert label == "Counter-strafe"
         assert cs_time == pytest.approx(10.0)
 
 
@@ -224,9 +224,9 @@ class TestClassifyBad:
 
 class TestShotClassificationDisplay:
     def test_counter_strafe_display(self):
-        sc = ShotClassification(label="Counter\u2011strafe", cs_time=45.0, shot_delay=30.0)
+        sc = ShotClassification(label="Counter-strafe", cs_time=45.0, shot_delay=30.0)
         text = sc.to_display_string()
-        assert "Counter\u2011strafe" in text
+        assert "Counter-strafe" in text
         assert "CS time: 45 ms" in text
         assert "Shot delay: 30 ms" in text
 
@@ -250,9 +250,9 @@ class TestShotClassificationDisplay:
         assert "Shot delay: 5 ms" in text
 
     def test_counter_strafe_missing_values_no_crash(self):
-        sc = ShotClassification(label="Counter\u2011strafe")   # no cs_time / shot_delay
+        sc = ShotClassification(label="Counter-strafe")   # no cs_time / shot_delay
         text = sc.to_display_string()
-        assert "Counter\u2011strafe" in text
+        assert "Counter-strafe" in text
         assert "CS time" not in text
 
 
@@ -362,7 +362,7 @@ class TestMovementClassifierPriority:
         # horizontal axis idle → Bad
         shot_time = _do_cs(mc, "vertical", t0=0.0)
         result = mc.classify_shot(shot_time)
-        assert result.label == "Counter\u2011strafe"
+        assert result.label == "Counter-strafe"
 
     def test_both_bad_returns_bad(self):
         mc = MovementClassifier()
@@ -383,7 +383,7 @@ class TestMovementClassifierPriority:
         mc.on_release("A", 100.0)
         mc.on_press("D", 140.0)
         result = mc.classify_shot(300.0)
-        assert result.label == "Counter\u2011strafe"
+        assert result.label == "Counter-strafe"
         assert result.cs_time == pytest.approx(70.0)   # vertical wins
 
     def test_result_type_is_shot_classification(self):
@@ -403,7 +403,7 @@ class TestEndToEnd:
         mc.on_release("A", 100.0)
         mc.on_press("D", 130.0)   # cs_time = 30 ms
         result = mc.classify_shot(200.0)
-        assert result.label == "Counter\u2011strafe"
+        assert result.label == "Counter-strafe"
         assert result.cs_time == pytest.approx(30.0)
         assert result.shot_delay == pytest.approx(70.0)
 
@@ -413,7 +413,7 @@ class TestEndToEnd:
         mc.on_release("W", 100.0)
         mc.on_press("S", 110.0)   # cs_time = 10 ms
         result = mc.classify_shot(180.0)
-        assert result.label == "Counter\u2011strafe"
+        assert result.label == "Counter-strafe"
         assert result.cs_time == pytest.approx(10.0)
 
     def test_overlap_scenario(self):
@@ -435,7 +435,7 @@ class TestEndToEnd:
         mc.on_release("A", 100.0)
         mc.on_press("D", 130.0)
         result1 = mc.classify_shot(200.0)
-        assert result1.label == "Counter\u2011strafe"
+        assert result1.label == "Counter-strafe"
         # Second shot without new movement → Bad (state was reset)
         result2 = mc.classify_shot(400.0)
         assert result2.label == "Bad"
