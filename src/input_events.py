@@ -8,36 +8,21 @@ if TYPE_CHECKING:
 
 from pynput import keyboard, mouse
 
-from classifier import MovementClassifier, ShotClassification
-
-try:
-    from movement_keys import FORWARD, BACKWARD, LEFT, RIGHT  # type: ignore
-except Exception:
-    FORWARD = 'E'  # type: ignore
-    BACKWARD = 'D'  # type: ignore
-    LEFT = 'S'  # type: ignore
-    RIGHT = 'F'  # type: ignore
+from classifier import MovementClassifierInterface, ShotFilterInterface
 
 
 class InputListener:
-    def __init__(self, overlay: "Overlay") -> None:
+    def __init__(
+        self,
+        overlay: "Overlay",
+        classifier: MovementClassifierInterface,
+        shot_filter: ShotFilterInterface,
+        movement_keys: frozenset[str],
+    ) -> None:
         self.overlay = overlay
-        try:
-            forward = str(FORWARD)
-            backward = str(BACKWARD)
-            left = str(LEFT)
-            right = str(RIGHT)
-        except Exception:
-            forward, backward, left, right = 'W', 'S', 'A', 'D'
-        forward = (forward[0] if forward else 'W').upper()
-        backward = (backward[0] if backward else 'S').upper()
-        left = (left[0] if left else 'A').upper()
-        right = (right[0] if right else 'D').upper()
-        self._movement_keys = {forward, backward, left, right}
-        try:
-            self.classifier = MovementClassifier(vertical_keys=(forward, backward), horizontal_keys=(left, right))
-        except Exception:
-            self.classifier = MovementClassifier()
+        self.classifier = classifier
+        self._shot_filter = shot_filter
+        self._movement_keys = movement_keys
         self._lock = threading.Lock()
         self._keyboard_listener: Optional[keyboard.Listener] = None
         self._mouse_listener: Optional[mouse.Listener] = None
@@ -104,7 +89,7 @@ class InputListener:
         if pressed:
             with self._lock:
                 base_result = self.classifier.classify_shot(current_time)
-            final_result = self._build_classification(base_result, current_time)
+            final_result = self._shot_filter.apply(base_result)
             self.overlay.update_result(final_result)
 
     def stop(self) -> None:
@@ -115,15 +100,4 @@ class InputListener:
             self._mouse_listener.stop()
             self._mouse_listener = None
 
-    def _build_classification(self, base: ShotClassification, shot_time: float) -> ShotClassification:
-        if base.label == "Overlap":
-            return ShotClassification(label="Overlap", overlap_time=base.overlap_time)
-        if base.label == "Counter-strafe":
-            cs_time = base.cs_time
-            shot_delay = base.shot_delay
-            if cs_time is not None and shot_delay is not None:
-                if shot_delay > 230.0 or (cs_time > 215.0 and shot_delay > 215.0):
-                    return ShotClassification(label="Bad", cs_time=cs_time, shot_delay=shot_delay)
-                return ShotClassification(label="Counter-strafe", cs_time=cs_time, shot_delay=shot_delay)
-            return ShotClassification(label="Bad")
-        return ShotClassification(label="Bad")
+

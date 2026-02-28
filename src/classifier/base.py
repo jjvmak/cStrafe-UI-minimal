@@ -22,6 +22,12 @@ class ShotClassificationInterface(ABC):
         """Return a human-friendly multi-line description of the classification."""
 
 
+class ShotFilterInterface(ABC):
+    @abstractmethod
+    def apply(self, raw: "ShotClassificationInterface") -> "ShotClassificationInterface":
+        """Apply threshold rules to a raw classification and return the final one."""
+
+
 class AxisStateInterface(ABC):
     @abstractmethod
     def on_press(self, key: str, timestamp: float) -> None:
