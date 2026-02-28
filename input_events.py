@@ -2,6 +2,10 @@ import threading
 import time
 from typing import Optional
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from overlay import Overlay
+
 from pynput import keyboard, mouse
 
 from classifier import MovementClassifier, ShotClassification
