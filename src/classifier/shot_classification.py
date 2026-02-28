@@ -1,14 +1,19 @@
-from dataclasses import dataclass
 from typing import Optional
 from .base import ShotClassificationInterface
 
 
-@dataclass
 class ShotClassification(ShotClassificationInterface):
-    label: str
-    cs_time: Optional[float] = None
-    shot_delay: Optional[float] = None
-    overlap_time: Optional[float] = None
+    def __init__(
+        self,
+        label: str,
+        cs_time: Optional[float] = None,
+        shot_delay: Optional[float] = None,
+        overlap_time: Optional[float] = None,
+    ):
+        self.label: str = label
+        self.cs_time: Optional[float] = cs_time
+        self.shot_delay: Optional[float] = shot_delay
+        self.overlap_time: Optional[float] = overlap_time
 
     def to_display_string(self) -> str:
         lines = [f"Classification: {self.label}"]

@@ -1,7 +1,11 @@
 from .movement_classifier import MovementClassifier
 from .shot_classification import ShotClassification
 from .axis_state import AxisState
-from .base import MovementClassifierInterface, ShotClassificationInterface
+from .base import (
+    MovementClassifierInterface,
+    ShotClassificationInterface,
+    AxisStateInterface,
+)
 
 __all__ = [
     "AxisState",
@@ -9,4 +13,5 @@ __all__ = [
     "ShotClassification",
     "MovementClassifierInterface",
     "ShotClassificationInterface",
+    "AxisStateInterface",
 ]

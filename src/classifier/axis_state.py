@@ -1,18 +1,19 @@
-from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Set, Dict
+
+from .base import AxisStateInterface
 
 
-@dataclass
-class AxisState:
-    keys: Tuple[str, str]
-    held_keys: set = field(default_factory=set)
-    press_times: dict = field(default_factory=dict)
-    cs_release_key: Optional[str] = None
-    cs_release_time: Optional[float] = None
-    cs_press_key: Optional[str] = None
-    cs_press_time: Optional[float] = None
-    overlap_start_time: Optional[float] = None
-    micro_candidate_duration: Optional[float] = None
+class AxisState(AxisStateInterface):
+    def __init__(self, keys: Tuple[str, str]):
+        self.keys: Tuple[str, str] = keys
+        self.held_keys: Set[str] = set()
+        self.press_times: Dict[str, float] = {}
+        self.cs_release_key: Optional[str] = None
+        self.cs_release_time: Optional[float] = None
+        self.cs_press_key: Optional[str] = None
+        self.cs_press_time: Optional[float] = None
+        self.overlap_start_time: Optional[float] = None
+        self.micro_candidate_duration: Optional[float] = None
 
     def on_press(self, key: str, timestamp: float) -> None:
         other = self.keys[0] if key == self.keys[1] else self.keys[1]
