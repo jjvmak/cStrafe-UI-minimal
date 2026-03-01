@@ -1,16 +1,16 @@
 # Project
-This is a Python 3.13 tool that helps Counter-Strike 2 players practice counter-strafing mechanics. It listens to your movement keys (W, A, S and D) and the left mouse button to determine whether you fired while coming to a full stop, started moving the other way, or were still overlapping directions. The tool provides real-time feedback on your strafing performance, allowing you to improve your movement and shooting accuracy in the game.
+This is a Python 3.13 tool that helps Counter-Strike 2 players practice counter-strafing mechanics. It listens to the movement keys (W, A, S, D) and the left mouse button to determine whether a shot was fired while coming to a full stop, after starting to move the other way, or while opposing directions were still overlapping. The tool provides real-time feedback on strafing performance so players can improve their movement and shooting accuracy.
 
-## Tecnologies Used
+## Technologies
 - Python 3.13
 - pynput (for listening to keyboard and mouse events)
 - tkinter (for creating the overlay UI)
 
-## Venv
-Always use 'cstrafe' venv when working on this project.
+## Virtual environment
+Always use the `cstrafe` virtual environment when working on this project.
 
 ## Testing
-This project uses pytest for testing. We do not want to test any of the UI code or the actual key listening code. Only the logic that determines the classification should be tested. 
+This project uses `pytest` for testing. Do not test any of the UI code or the actual key-listening code; only test the logic that determines shot classification.
 
-## Counter-strafing Mechanics
-Counter-strafing is a technique used in first-person shooter games like Counter-Strike to quickly change direction while maintaining accuracy. It involves releasing one movement key and quickly pressing the opposite key before shooting. This allows players to stop their movement momentarily, which will improve shooting accuracy. Optimal counter-strafing requires precise timing, as the shot should be fired within a short delay (80ms) after pressing the opposite key. Overlapping movement (holding both opposing keys at the same time) should be avoided, as it will lead to inaccurate shots.
+## Counter-strafing mechanics
+Counter-strafing is a technique used in first-person shooters like Counter-Strike to quickly change direction while maintaining accuracy. It involves releasing one movement key and quickly pressing the opposite key before shooting. This briefly stops player movement and can improve shooting accuracy. Optimal counter-strafing requires precise timing: the shot should be fired within a short delay (80 ms) after pressing the opposite key. Avoid overlapping movement (holding both opposing keys simultaneously), as it produces inaccurate shots.
