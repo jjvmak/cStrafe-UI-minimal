@@ -44,21 +44,21 @@ class MovementClassifier(MovementClassifierInterface):
     def on_press(self, key: str, timestamp: float) -> None:
         if key in self.vertical.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 {key} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] {key} @ {timestamp:.0f} ms")
             self.vertical.on_press(key, timestamp)
         elif key in self.horizontal.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 {key} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] {key} @ {timestamp:.0f} ms")
             self.horizontal.on_press(key, timestamp)
 
     def on_release(self, key: str, timestamp: float) -> None:
         if key in self.vertical.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 {key} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] {key} @ {timestamp:.0f} ms")
             self.vertical.on_release(key, timestamp)
         elif key in self.horizontal.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 {key} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] {key} @ {timestamp:.0f} ms")
             self.horizontal.on_release(key, timestamp)
 
     def classify_shot(self, shot_time: float) -> ShotClassification:

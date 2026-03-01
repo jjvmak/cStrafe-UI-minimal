@@ -64,22 +64,22 @@ class MovementClassifier(MovementClassifierInterface):
         if upper == "SHIFT":
             self._shift_held = True
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 SHIFT @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] SHIFT @ {timestamp:.0f} ms")
             return
         if upper == "CTRL":
             self._ctrl_held = True
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 CTRL @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] CTRL @ {timestamp:.0f} ms")
             return
 
         if upper in self.vertical.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 {upper} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] {upper} @ {timestamp:.0f} ms")
             self.vertical.on_press(upper, timestamp)
             self._last_movement_time = timestamp
         elif upper in self.horizontal.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2193 {upper} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY PRESS] {upper} @ {timestamp:.0f} ms")
             self.horizontal.on_press(upper, timestamp)
             self._last_movement_time = timestamp
 
@@ -89,21 +89,21 @@ class MovementClassifier(MovementClassifierInterface):
         if upper == "SHIFT":
             self._shift_held = False
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 SHIFT @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] SHIFT @ {timestamp:.0f} ms")
             return
         if upper == "CTRL":
             self._ctrl_held = False
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 CTRL @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] CTRL @ {timestamp:.0f} ms")
             return
 
         if upper in self.vertical.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 {upper} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] {upper} @ {timestamp:.0f} ms")
             self.vertical.on_release(upper, timestamp)
         elif upper in self.horizontal.keys:
             if self._debug:
-                self._debug.log(f"[KEY] \u2191 {upper} @ {timestamp:.0f} ms")
+                self._debug.log(f"[KEY RELEASE] {upper} @ {timestamp:.0f} ms")
             self.horizontal.on_release(upper, timestamp)
 
     def classify_shot(self, shot_time: float) -> ShotClassification:

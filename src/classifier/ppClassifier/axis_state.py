@@ -29,6 +29,15 @@ class AxisState(AxisStateInterface):
         if key not in self.keys:
             return
         other = self.keys[0] if key == self.keys[1] else self.keys[1]
+        # If we're starting a fresh movement from a complete stand-still
+        # (nothing held, no pending CS escape) while a stale overlap is
+        # recorded from a prior sequence where no shot was fired, clear all
+        # state so the stale overlap doesn't corrupt CS tracking for the new
+        # movement.  The overlap_start_time is preserved only for the live
+        # shot detection in classify_shot; once a new movement begins from
+        # rest it is no longer relevant.
+        if not self.held_keys and self.cs_press_key is None and self.overlap_start_time is not None:
+            self._reset()
         self.held_keys.add(key)
         self.press_times[key] = timestamp
         if other in self.held_keys and self.overlap_start_time is None:
@@ -49,8 +58,6 @@ class AxisState(AxisStateInterface):
             else:
                 self.micro_candidate_duration = None
         self.held_keys.discard(key)
-        if not self.held_keys:
-            self.overlap_start_time = None
         # Only start a new CS tracking cycle when releasing a key that is NOT
         # the counter-press key.  If the player releases the CS key itself
         # (the brief D/A tap to stop momentum) we must preserve cs_press_key/time

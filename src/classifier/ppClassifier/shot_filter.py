@@ -11,7 +11,6 @@ class ShotFilter(ShotFilterInterface):
       - Overlap                          → Bad / "Overlapping movement"
       - Holding Shift or Ctrl            → Bad (sub_label set)
       - shot_delay < MIN_SHOT_DELAY      → Bad / "Firing too early"
-      - cs_time + shot_delay > COMBINED  → Bad
       - MIN_SHOT_DELAY <= delay <= 300   → Perfect
       - 300 < delay <= 500               → Good
       - delay > 500                      → Bad
@@ -21,7 +20,6 @@ class ShotFilter(ShotFilterInterface):
     MIN_SHOT_DELAY = 80.0       # Minimum ms for a valid (non-early) CS
     PERFECT_MAX = 300.0         # Upper bound (inclusive) for "Perfect"
     GOOD_MAX = 500.0            # Upper bound (inclusive) for "Good"
-    COMBINED_THRESHOLD = 430.0  # cs_time + shot_delay ceiling
 
     def apply(self, raw: ShotClassificationInterface) -> ShotClassification:
         assert isinstance(raw, ShotClassification)
@@ -63,14 +61,6 @@ class ShotFilter(ShotFilterInterface):
                 return ShotClassification(
                     label="Bad",
                     sub_label="Firing too early",
-                    cs_time=cs_time,
-                    shot_delay=shot_delay,
-                )
-
-            if cs_time is not None and (cs_time + shot_delay) > self.COMBINED_THRESHOLD:
-                return ShotClassification(
-                    label="Bad",
-                    sub_label="CS too slow",
                     cs_time=cs_time,
                     shot_delay=shot_delay,
                 )

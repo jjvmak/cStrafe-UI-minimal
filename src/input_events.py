@@ -30,6 +30,9 @@ class InputListener:
         self._lock = threading.Lock()
         self._keyboard_listener: Optional[keyboard.Listener] = None
         self._mouse_listener: Optional[mouse.Listener] = None
+        # Tracks which movement/modifier keys are currently held so that
+        # duplicate pynput events (a known Windows hook quirk) are ignored.
+        self._held_keys: set[str] = set()
 
     def start(self) -> None:
         self._keyboard_listener = keyboard.Listener(
@@ -67,11 +70,36 @@ class InputListener:
             char = key.char
         except AttributeError:
             char = None
+        # Fallback: on Windows, pynput may report key.char as None for regular
+        # letter keys when certain OS quirks occur.  Use the virtual key code
+        # (vk) to recover the character so movement keys are never silently
+        # dropped.
+        if char is None:
+            try:
+                vk = key.vk  # type: ignore[union-attr]
+                if vk is not None and 65 <= vk <= 90:  # A–Z
+                    char = chr(vk)
+            except AttributeError:
+                pass
+        if key in (keyboard.Key.shift, keyboard.Key.shift_l, keyboard.Key.shift_r):
+            if "SHIFT" not in self._held_keys:
+                self._held_keys.add("SHIFT")
+                with self._lock:
+                    self.classifier.on_press("SHIFT", timestamp)
+            return
+        if key in (keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r):
+            if "CTRL" not in self._held_keys:
+                self._held_keys.add("CTRL")
+                with self._lock:
+                    self.classifier.on_press("CTRL", timestamp)
+            return
         if char:
             upper_char = char.upper()
             if upper_char in self._movement_keys:
-                with self._lock:
-                    self.classifier.on_press(upper_char, timestamp)
+                if upper_char not in self._held_keys:
+                    self._held_keys.add(upper_char)
+                    with self._lock:
+                        self.classifier.on_press(upper_char, timestamp)
             if upper_char == self._left_key:
                 self.overlay.set_left_key_held(True)
             elif upper_char == self._right_key:
@@ -84,11 +112,36 @@ class InputListener:
             char = key.char
         except AttributeError:
             char = None
+        # Fallback: on Windows, pynput may report key.char as None for regular
+        # letter keys when certain OS quirks occur.  Use the virtual key code
+        # (vk) to recover the character so movement keys are never silently
+        # dropped and never get stuck in _held_keys.
+        if char is None:
+            try:
+                vk = key.vk  # type: ignore[union-attr]
+                if vk is not None and 65 <= vk <= 90:  # A–Z
+                    char = chr(vk)
+            except AttributeError:
+                pass
+        if key in (keyboard.Key.shift, keyboard.Key.shift_l, keyboard.Key.shift_r):
+            if "SHIFT" in self._held_keys:
+                self._held_keys.discard("SHIFT")
+                with self._lock:
+                    self.classifier.on_release("SHIFT", timestamp)
+            return
+        if key in (keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r):
+            if "CTRL" in self._held_keys:
+                self._held_keys.discard("CTRL")
+                with self._lock:
+                    self.classifier.on_release("CTRL", timestamp)
+            return
         if char:
             upper_char = char.upper()
             if upper_char in self._movement_keys:
-                with self._lock:
-                    self.classifier.on_release(upper_char, timestamp)
+                if upper_char in self._held_keys:
+                    self._held_keys.discard(upper_char)
+                    with self._lock:
+                        self.classifier.on_release(upper_char, timestamp)
             if upper_char == self._left_key:
                 self.overlay.set_left_key_held(False)
             elif upper_char == self._right_key:

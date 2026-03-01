@@ -197,6 +197,40 @@ class TestClassifyOverlap:
         assert label == "Counter-strafe"
         assert cs_time == pytest.approx(10.0)
 
+    def test_overlap_detected_after_both_keys_released(self):
+        """A↓ D↓(overlap) A↑ D↑ → shot must still return Overlap, not Bad."""
+        ax = make_axis()
+        ax.on_press("A", 100.0)
+        ax.on_press("D", 150.0)   # overlap starts
+        ax.on_release("A", 160.0)
+        ax.on_release("D", 200.0)  # all keys released; overlap info must survive
+        label, overlap_time, _ = ax.classify_shot(300.0)
+        assert label == "Overlap"
+        assert overlap_time == pytest.approx(150.0)  # 300 - 150
+
+    def test_stale_overlap_cleared_on_new_movement(self):
+        """Overlap without a shot, followed by a clean CS → Counter-strafe.
+
+        The overlap_start_time must not survive into the next movement sequence.
+        If it did, the escape-hatch in classify_shot would misinterpret the gap
+        between the overlap's last release and the new A↓ as a valid 'CS time',
+        producing a spurious Counter-strafe result with wrong timestamps.
+        """
+        ax = make_axis()
+        # --- overlap, no shot ---
+        ax.on_press("A", 0.0)
+        ax.on_press("D", 10.0)    # overlap_start_time = 10
+        ax.on_release("A", 20.0)
+        ax.on_release("D", 30.0)  # all released, overlap_start_time stays (no shot)
+        # --- new, clean counter-strafe ---
+        ax.on_press("A", 100.0)   # fresh movement from rest → stale state cleared
+        ax.on_release("A", 200.0) # cs_release_key = A
+        ax.on_press("D", 226.0)   # cs_press_key = D, cs_time = 26 ms
+        label, cs_time, shot_delay = ax.classify_shot(349.0)  # shot_delay = 123 ms
+        assert label == "Counter-strafe"
+        assert cs_time == pytest.approx(26.0)   # A↑ → D↓, not stale timestamps
+        assert shot_delay == pytest.approx(123.0)
+
 
 # ===========================================================================
 # AxisState.classify_shot — Bad
@@ -499,6 +533,39 @@ class TestEndToEnd:
         assert result.label == "Bad"
         assert result.sub_label == "Overlapping movement"
         assert result.overlap_time == pytest.approx(80.0)   # 100 - 20
+
+    def test_overlap_both_keys_released_then_shot(self):
+        """A↓ D↓ A↑ D↑ then shot → Bad / Overlapping movement (not 'no counter-press')."""
+        mc = MovementClassifier()
+        mc.on_press("A", 0.0)
+        mc.on_press("D", 50.0)     # overlap starts at 50
+        mc.on_release("A", 100.0)
+        mc.on_release("D", 150.0)  # both released; overlap must not be forgotten
+        result = mc.classify_shot(300.0)
+        assert result.label == "Bad"
+        assert result.sub_label == "Overlapping movement"
+
+    def test_clean_cs_after_unshot_overlap_is_perfect(self):
+        """Overlap (no shot) followed by a clean CS must classify as Perfect.
+
+        The stale overlap_start_time must not corrupt CS tracking for the next
+        movement sequence.  This was mistakenly producing a spurious 'Perfect'
+        result sourced from wrong (overlap-era) timestamps via the escape hatch.
+        """
+        mc = MovementClassifier()
+        # --- overlap, no shot ---
+        mc.on_press("A", 0.0)
+        mc.on_press("D", 10.0)
+        mc.on_release("A", 20.0)
+        mc.on_release("D", 30.0)
+        # --- fresh, clean counter-strafe ---
+        mc.on_press("A", 100.0)
+        mc.on_release("A", 200.0)  # cs_release @ 200
+        mc.on_press("D", 226.0)    # cs_press @ 226 → cs_time = 26 ms
+        result = mc.classify_shot(349.0)  # shot_delay = 123 ms → Perfect
+        assert result.label == "Perfect"
+        assert result.cs_time == pytest.approx(26.0)
+        assert result.shot_delay == pytest.approx(123.0)
 
     def test_not_detected_long_pause(self):
         mc = MovementClassifier()

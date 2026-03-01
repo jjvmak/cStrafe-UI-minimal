@@ -6,8 +6,7 @@ Covers:
   - Overlap → Bad / "Overlapping movement"
   - Counter-strafe: Perfect (80–300 ms), Good (300–500 ms)
   - Counter-strafe: Bad — firing too early (<80 ms)
-  - Counter-strafe: Bad — shot_delay exceeds hard limit (>230 ms)
-  - Counter-strafe: Bad — combined cs_time + shot_delay > 430 ms
+  - Counter-strafe: Bad — shot_delay beyond Good max (>500 ms)
   - Counter-strafe: Bad — Holding Shift
   - Counter-strafe: Bad — Holding Ctrl
   - Counter-strafe: Bad — missing timing fields
@@ -151,16 +150,22 @@ class TestShotFilterFiringTooEarly:
 
 class TestShotFilterGoodMaxBoundary:
     def test_shot_delay_at_good_max_is_good(self):
-        """shot_delay == 500 ms (cs_time=None bypasses combined check) → Good."""
+        """shot_delay == 500 ms → Good (inclusive upper bound)."""
         f = ShotFilter()
-        # cs_time=None skips the combined threshold; shot_delay=500 falls in Good range
         raw = ShotClassification(label="Counter-strafe", cs_time=None, shot_delay=500.0)
         assert f.apply(raw).label == "Good"
 
-    def test_shot_delay_in_good_range_small_cs_time(self):
-        """cs_time=20 + shot_delay=400 = 420 <= 430 combined → Good."""
+    def test_shot_delay_in_good_range_with_cs_time(self):
+        """Large cs_time does not affect classification; only shot_delay matters."""
         f = ShotFilter()
-        raw = ShotClassification(label="Counter-strafe", cs_time=20.0, shot_delay=400.0)
+        raw = ShotClassification(label="Counter-strafe", cs_time=200.0, shot_delay=250.0)
+        # shot_delay=250 is Perfect regardless of cs_time
+        assert f.apply(raw).label == "Perfect"
+
+    def test_large_cs_time_with_good_shot_delay(self):
+        """cs_time=300 + shot_delay=400 would have exceeded old combined threshold; now Good."""
+        f = ShotFilter()
+        raw = ShotClassification(label="Counter-strafe", cs_time=300.0, shot_delay=400.0)
         assert f.apply(raw).label == "Good"
 
     def test_shot_delay_above_good_max_is_bad(self):
@@ -181,38 +186,6 @@ class TestShotFilterGoodMaxBoundary:
         result = f.apply(raw)
         assert result.cs_time is None
         assert result.shot_delay == pytest.approx(550.0)
-
-
-# ===========================================================================
-# Counter-strafe — Bad (combined threshold)
-# ===========================================================================
-
-class TestShotFilterCombinedThreshold:
-    def test_combined_at_boundary_is_not_rejected(self):
-        """cs_time + shot_delay == 430 is at the boundary — not rejected."""
-        f = ShotFilter()
-        raw = ShotClassification(label="Counter-strafe", cs_time=215.0, shot_delay=215.0)
-        # shot_delay=215 is within Perfect range (80–300), combined=430 → accepted
-        assert f.apply(raw).label in ("Perfect", "Good")
-
-    def test_combined_just_above_threshold_is_bad(self):
-        """cs_time + shot_delay == 431 → Bad."""
-        f = ShotFilter()
-        raw = ShotClassification(label="Counter-strafe", cs_time=216.0, shot_delay=215.0)
-        assert f.apply(raw).label == "Bad"
-
-    def test_combined_threshold_sub_label(self):
-        """cs_time + shot_delay above threshold → sub_label 'CS too slow'."""
-        f = ShotFilter()
-        raw = ShotClassification(label="Counter-strafe", cs_time=216.0, shot_delay=215.0)
-        assert f.apply(raw).sub_label == "CS too slow"
-
-    def test_high_cs_time_with_low_shot_delay_not_rejected(self):
-        """Large cs_time is fine as long as combined stays within threshold."""
-        f = ShotFilter()
-        raw = ShotClassification(label="Counter-strafe", cs_time=200.0, shot_delay=100.0)
-        # combined = 300 ≤ 430 → accepted
-        assert f.apply(raw).label in ("Perfect", "Good")
 
 
 # ===========================================================================
