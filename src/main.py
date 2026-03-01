@@ -29,7 +29,7 @@ def main() -> None:
     shot_filter = ShotFilter()
     movement_keys = frozenset((forward, backward, left, right))
     overlay = Overlay()
-    listener = InputListener(overlay, classifier, shot_filter, movement_keys)
+    listener = InputListener(overlay, classifier, shot_filter, movement_keys, left_key=left, right_key=right)
     listener.start()
     overlay.run()
 

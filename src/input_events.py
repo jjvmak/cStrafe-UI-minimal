@@ -18,11 +18,15 @@ class InputListener:
         classifier: MovementClassifierInterface,
         shot_filter: ShotFilterInterface,
         movement_keys: frozenset[str],
+        left_key: Optional[str] = None,
+        right_key: Optional[str] = None,
     ) -> None:
         self.overlay = overlay
         self.classifier = classifier
         self._shot_filter = shot_filter
         self._movement_keys = movement_keys
+        self._left_key = left_key
+        self._right_key = right_key
         self._lock = threading.Lock()
         self._keyboard_listener: Optional[keyboard.Listener] = None
         self._mouse_listener: Optional[mouse.Listener] = None
@@ -68,6 +72,10 @@ class InputListener:
             if upper_char in self._movement_keys:
                 with self._lock:
                     self.classifier.on_press(upper_char, timestamp)
+            if upper_char == self._left_key:
+                self.overlay.set_left_key_held(True)
+            elif upper_char == self._right_key:
+                self.overlay.set_right_key_held(True)
 
     def _on_key_release(self, key: keyboard.Key) -> None:
         timestamp = time.time() * 1000.0
@@ -81,12 +89,17 @@ class InputListener:
             if upper_char in self._movement_keys:
                 with self._lock:
                     self.classifier.on_release(upper_char, timestamp)
+            if upper_char == self._left_key:
+                self.overlay.set_left_key_held(False)
+            elif upper_char == self._right_key:
+                self.overlay.set_right_key_held(False)
 
     def _on_click(self, x: int, y: int, button: mouse.Button, pressed: bool) -> None:
         if button != mouse.Button.left:
             return
         current_time = time.time() * 1000.0
         if pressed:
+            self.overlay.flash_shot()
             with self._lock:
                 base_result = self.classifier.classify_shot(current_time)
             final_result = self._shot_filter.apply(base_result)

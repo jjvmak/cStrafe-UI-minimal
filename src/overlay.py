@@ -15,6 +15,16 @@ class Overlay:
         self.header_font_size = 12
         self.body_font_size = 10
         self.retro_font = "Courier"
+
+        # Grid layout for self.frame children
+        self.frame.grid_rowconfigure(2, weight=1)
+        self.frame.grid_columnconfigure(0, weight=1)
+
+        # Top bar: brief orange flash when mouse 1 is clicked
+        self.top_bar = tk.Frame(self.frame, bg="#ff6600", height=4)
+        self.top_bar.grid(row=0, column=0, sticky="ew")
+        self.top_bar.grid_remove()
+
         self.header = tk.Label(
             self.frame,
             text="cStrafe UI",
@@ -23,9 +33,21 @@ class Overlay:
             font=(self.retro_font, self.header_font_size, "bold"),
             anchor="center",
         )
-        self.header.pack(fill=tk.X)
+        self.header.grid(row=1, column=0, sticky="ew")
+
+        # Inner frame: left bar | body | right bar
+        self._inner_frame = tk.Frame(self.frame, bg="#202020")
+        self._inner_frame.grid(row=2, column=0, sticky="nsew")
+        self._inner_frame.grid_rowconfigure(0, weight=1)
+        self._inner_frame.grid_columnconfigure(1, weight=1)
+
+        # Left bar: yellow while left strafe key is held
+        self.left_bar = tk.Frame(self._inner_frame, bg="#ffff00", width=6)
+        self.left_bar.grid(row=0, column=0, sticky="nsew")
+        self.left_bar.grid_remove()
+
         self.body = tk.Label(
-            self.frame,
+            self._inner_frame,
             text="Waiting for input...",
             fg="white",
             bg="#202020",
@@ -33,7 +55,13 @@ class Overlay:
             justify=tk.CENTER,
             anchor="center",
         )
-        self.body.pack(fill=tk.BOTH, expand=True, padx=8, pady=4)
+        self.body.grid(row=0, column=1, sticky="nsew", padx=8, pady=4)
+
+        # Right bar: yellow while right strafe key is held
+        self.right_bar = tk.Frame(self._inner_frame, bg="#ffff00", width=6)
+        self.right_bar.grid(row=0, column=2, sticky="nsew")
+        self.right_bar.grid_remove()
+
         self._offset_x: Optional[int] = None
         self._offset_y: Optional[int] = None
         self.header.bind("<ButtonPress-1>", self._on_mouse_down)
@@ -76,6 +104,7 @@ class Overlay:
         self._last_bg_colour = bg_colour
         def apply_update() -> None:
             self.frame.configure(bg=bg_colour)
+            self._inner_frame.configure(bg=bg_colour)
             self.body.configure(text=text, bg=bg_colour)
         self.root.after(0, apply_update)
 
@@ -106,6 +135,30 @@ class Overlay:
                 self.root.deiconify()
             self.is_visible = not self.is_visible
         self.root.after(0, do_toggle)
+
+    def set_left_key_held(self, held: bool) -> None:
+        def apply() -> None:
+            if held:
+                self.left_bar.grid()
+            else:
+                self.left_bar.grid_remove()
+        self.root.after(0, apply)
+
+    def set_right_key_held(self, held: bool) -> None:
+        def apply() -> None:
+            if held:
+                self.right_bar.grid()
+            else:
+                self.right_bar.grid_remove()
+        self.root.after(0, apply)
+
+    def flash_shot(self) -> None:
+        def show() -> None:
+            self.top_bar.grid()
+            self.root.after(150, hide)
+        def hide() -> None:
+            self.top_bar.grid_remove()
+        self.root.after(0, show)
 
     def terminate(self) -> None:
         self.root.after(0, self.root.destroy)
