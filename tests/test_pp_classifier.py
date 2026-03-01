@@ -39,14 +39,26 @@ class TestAxisStateTracking:
         assert ax.cs_release_key == "A"
         assert ax.cs_release_time == 150.0
 
-    def test_release_clears_cs_press_fields(self):
+    def test_release_of_initial_key_clears_cs_press_fields(self):
+        # Releasing the initial key (not the CS key) should clear cs_press fields
         ax = make_axis()
         ax.on_press("A", 100.0)
         ax.on_release("A", 150.0)
         ax.on_press("D", 160.0)    # sets cs_press fields
-        ax.on_release("D", 200.0)  # should clear them
+        ax.on_release("A", 200.0)  # releasing A (not the CS key) should reset state
         assert ax.cs_press_key is None
         assert ax.cs_press_time is None
+
+    def test_release_of_cs_key_preserves_cs_press_fields(self):
+        # Releasing the counter-press key (D tap) must NOT wipe cs_press fields
+        # so that classify_shot can still detect the counter-strafe
+        ax = make_axis()
+        ax.on_press("A", 100.0)
+        ax.on_release("A", 150.0)
+        ax.on_press("D", 160.0)    # sets cs_press fields
+        ax.on_release("D", 200.0)  # releasing the CS tap — must preserve state
+        assert ax.cs_press_key == "D"
+        assert ax.cs_press_time == 160.0
 
     def test_press_records_press_time(self):
         ax = make_axis()
@@ -254,6 +266,12 @@ class TestShotClassificationDisplay:
         text = sc.to_display_string()
         assert "Bad" in text
         assert "Firing too early" in text
+
+    def test_bad_display_shows_overlap_time(self):
+        sc = ShotClassification(label="Bad", sub_label="Overlapping movement", overlap_time=55.0)
+        text = sc.to_display_string()
+        assert "Overlapping movement" in text
+        assert "55 ms" in text
 
     def test_not_detected_display(self):
         sc = ShotClassification(label="Not detected")

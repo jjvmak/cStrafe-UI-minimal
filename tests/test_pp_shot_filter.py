@@ -169,6 +169,12 @@ class TestShotFilterGoodMaxBoundary:
         raw = ShotClassification(label="Counter-strafe", cs_time=None, shot_delay=501.0)
         assert f.apply(raw).label == "Bad"
 
+    def test_fired_too_late_sub_label(self):
+        """shot_delay beyond Good max → sub_label 'Fired too late'."""
+        f = ShotFilter()
+        raw = ShotClassification(label="Counter-strafe", cs_time=None, shot_delay=501.0)
+        assert f.apply(raw).sub_label == "Fired too late"
+
     def test_timing_preserved_on_too_late_shot(self):
         f = ShotFilter()
         raw = ShotClassification(label="Counter-strafe", cs_time=None, shot_delay=550.0)
@@ -194,6 +200,12 @@ class TestShotFilterCombinedThreshold:
         f = ShotFilter()
         raw = ShotClassification(label="Counter-strafe", cs_time=216.0, shot_delay=215.0)
         assert f.apply(raw).label == "Bad"
+
+    def test_combined_threshold_sub_label(self):
+        """cs_time + shot_delay above threshold → sub_label 'CS too slow'."""
+        f = ShotFilter()
+        raw = ShotClassification(label="Counter-strafe", cs_time=216.0, shot_delay=215.0)
+        assert f.apply(raw).sub_label == "CS too slow"
 
     def test_high_cs_time_with_low_shot_delay_not_rejected(self):
         """Large cs_time is fine as long as combined stays within threshold."""

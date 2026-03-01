@@ -51,10 +51,15 @@ class AxisState(AxisStateInterface):
         self.held_keys.discard(key)
         if not self.held_keys:
             self.overlap_start_time = None
-        self.cs_release_key = key
-        self.cs_release_time = timestamp
-        self.cs_press_key = None
-        self.cs_press_time = None
+        # Only start a new CS tracking cycle when releasing a key that is NOT
+        # the counter-press key.  If the player releases the CS key itself
+        # (the brief D/A tap to stop momentum) we must preserve cs_press_key/time
+        # so that classify_shot can still detect the counter-strafe.
+        if key != self.cs_press_key:
+            self.cs_release_key = key
+            self.cs_release_time = timestamp
+            self.cs_press_key = None
+            self.cs_press_time = None
 
     def classify_shot(self, shot_time: float) -> Tuple[str, Optional[float], Optional[float]]:
         """

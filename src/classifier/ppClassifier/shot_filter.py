@@ -70,6 +70,7 @@ class ShotFilter(ShotFilterInterface):
             if cs_time is not None and (cs_time + shot_delay) > self.COMBINED_THRESHOLD:
                 return ShotClassification(
                     label="Bad",
+                    sub_label="CS too slow",
                     cs_time=cs_time,
                     shot_delay=shot_delay,
                 )
@@ -89,7 +90,7 @@ class ShotFilter(ShotFilterInterface):
                 )
 
             # shot_delay > GOOD_MAX (> 500 ms)
-            return ShotClassification(label="Bad", cs_time=cs_time, shot_delay=shot_delay)
+            return ShotClassification(label="Bad", sub_label="Fired too late", cs_time=cs_time, shot_delay=shot_delay)
 
         # "Bad" and any unexpected labels
         return raw

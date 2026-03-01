@@ -68,6 +68,8 @@ class ShotClassification(ShotClassificationInterface):
         lines = ["Classification: Bad"]
         if self.sub_label:
             lines.append(self.sub_label)
+        if self.overlap_time is not None:
+            lines.append(f"Overlap: {self.overlap_time:.0f} ms")
         if self.cs_time is not None and self.shot_delay is not None:
             lines.append(f"CS time: {self.cs_time:.0f} ms")
             lines.append(f"Shot delay: {self.shot_delay:.0f} ms")
