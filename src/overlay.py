@@ -146,6 +146,8 @@ class Overlay:
             lines.append(f"Shot delay: {classification.shot_delay:.0f} ms")
         colours = {
             "Counter-strafe": "#228b22",
+            "Perfect": "#228b22",
+            "Good": "#228b22",
             "Overlap": "#ff8c00",
             "Bad": "#cc0000",
         }
