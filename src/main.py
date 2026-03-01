@@ -11,8 +11,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classifier",
         choices=list(CLASSIFIERS),
-        default="cs2kitchen",
-        help="Classifier to use (default: cs2kitchen)",
+        default="pp",
+        help="Classifier to use (default: pp)",
     )
     parser.add_argument(
         "--debugger",
