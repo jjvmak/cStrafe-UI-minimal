@@ -37,7 +37,7 @@ After each shot the tool displays one of three labels along with timing informat
 
 | Label            | Description |
 |------------------|-------------|
-| **Counter‑strafe** | You released one movement key and quickly pressed the opposite key before shooting. A valid counterstrafe should be followed by a shot within a short delay. The overlay shows the time between the key release and the opposite key press (*CS time*) and the delay between pressing the opposite key and firing (*Shot delay*). |
+| **Counter-strafe** | You released one movement key and quickly pressed the opposite key before shooting. A valid counterstrafe should be followed by a shot within a short delay. The overlay shows the time between the key release and the opposite key press (*CS time*) and the delay between pressing the opposite key and firing (*Shot delay*). |
 | **Overlap** | Both opposing movement keys were held at the same time. This indicates overlapping movement, which should be avoided for accurate shooting. The overlay shows how long the keys overlapped before the shot. |
 | **Bad** | No valid counterstrafe pattern was detected before the shot. This can mean you shot without changing direction, your movement timing was too slow or you were moving in only one direction. |
 
