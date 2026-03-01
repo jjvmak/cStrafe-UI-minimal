@@ -5,6 +5,7 @@ from .cs2KitchenClassifier.shot_filter import ShotFilter as CS2KitchenShotFilter
 from .ppClassifier.movement_classifier import MovementClassifier as PPMovementClassifier
 from .ppClassifier.shot_filter import ShotFilter as PPShotFilter
 from .base import (
+    DebugLogger,
     MovementClassifierInterface,
     ShotClassificationInterface,
     ShotFilterInterface,
@@ -22,6 +23,7 @@ CLASSIFIERS: dict[str, tuple[type, type]] = {
 
 __all__ = [
     "AxisState",
+    "DebugLogger",
     "MovementClassifier",
     "ShotClassification",
     "ShotFilter",

@@ -208,7 +208,7 @@ class TestClassifyBad:
         label, v1, v2 = ax.classify_shot(100.0)
         assert label == "Bad"
         assert v1 is None
-        assert v2 is None
+        assert v2 == "no movement"
 
     def test_bad_when_only_one_key_pressed(self):
         ax = make_axis()

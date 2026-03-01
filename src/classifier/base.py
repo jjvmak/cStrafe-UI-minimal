@@ -1,5 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable, Optional
+
+
+class DebugLogger:
+    """
+    Simple debug logger for classifiers.
+
+    Accepts a callback (e.g. ``overlay.log_debug``) and provides a ``log()``
+    method.  Classifiers that accept a ``debug_logger`` kwarg call
+    ``self._debug.log(msg)`` to emit human-readable debug events.
+
+    Usage::
+
+        logger = DebugLogger(overlay.log_debug)
+        classifier = MovementClassifier(..., debug_logger=logger)
+    """
+
+    def __init__(self, callback: Callable[[str], None]) -> None:
+        self._callback = callback
+
+    def log(self, message: str) -> None:
+        self._callback(message)
 
 
 class MovementClassifierInterface(ABC):

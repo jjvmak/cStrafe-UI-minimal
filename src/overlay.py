@@ -1,11 +1,14 @@
+import time
 import tkinter as tk
 from typing import Optional
 
 from classifier import ShotClassification
 
+_DEBUG_MAX_LINES = 60
+
 
 class Overlay:
-    def __init__(self) -> None:
+    def __init__(self, debug_mode: bool = False) -> None:
         self.root = tk.Tk()
         self.root.title("cStrafe UI by CS2Kitchen")
         self.root.overrideredirect(True)
@@ -15,6 +18,7 @@ class Overlay:
         self.header_font_size = 12
         self.body_font_size = 10
         self.retro_font = "Courier"
+        self._debug_mode = debug_mode
 
         # Grid layout for self.frame children
         self.frame.grid_rowconfigure(2, weight=1)
@@ -62,6 +66,11 @@ class Overlay:
         self.right_bar.grid(row=0, column=2, sticky="nsew")
         self.right_bar.grid_remove()
 
+        # Debug panel (row 3) — only created when debug_mode is enabled
+        self._debug_text: Optional[tk.Text] = None
+        if debug_mode:
+            self._build_debug_panel()
+
         self._offset_x: Optional[int] = None
         self._offset_y: Optional[int] = None
         self.header.bind("<ButtonPress-1>", self._on_mouse_down)
@@ -69,6 +78,50 @@ class Overlay:
         self.is_visible = True
         self._last_text: Optional[str] = None
         self._last_bg_colour: Optional[str] = None
+
+    def _build_debug_panel(self) -> None:
+        """Create the debug log panel shown below the main body."""
+        debug_container = tk.Frame(self.frame, bg="#101010")
+        debug_container.grid(row=3, column=0, sticky="ew")
+        debug_container.grid_columnconfigure(0, weight=1)
+
+        title = tk.Label(
+            debug_container,
+            text="\u2500\u2500 DEBUG \u2500\u2500",
+            fg="#00cc44",
+            bg="#101010",
+            font=(self.retro_font, 8, "bold"),
+            anchor="w",
+        )
+        title.grid(row=0, column=0, columnspan=2, sticky="ew", padx=4, pady=(2, 0))
+
+        self._debug_text = tk.Text(
+            debug_container,
+            fg="#00cc44",
+            bg="#101010",
+            insertbackground="#00cc44",
+            font=(self.retro_font, 8),
+            state=tk.NORMAL,
+            height=12,
+            width=70,
+            wrap=tk.NONE,
+            bd=0,
+            highlightthickness=0,
+        )
+        # Allow selection and Ctrl+A/C for clipboard; block all other key edits.
+        def _block_edit(event: tk.Event) -> Optional[str]:
+            if event.state & 0x4 and event.keysym.lower() in ("c", "a"):
+                return None  # let Ctrl+C / Ctrl+A through
+            return "break"
+        self._debug_text.bind("<Key>", _block_edit)
+        scrollbar = tk.Scrollbar(
+            debug_container,
+            orient=tk.VERTICAL,
+            command=self._debug_text.yview,
+        )
+        self._debug_text.configure(yscrollcommand=scrollbar.set)
+        self._debug_text.grid(row=1, column=0, sticky="nsew", padx=(4, 0), pady=(0, 4))
+        scrollbar.grid(row=1, column=1, sticky="ns", pady=(0, 4))
 
     def _on_mouse_down(self, event: tk.Event) -> None:
         self._offset_x = event.x
@@ -162,3 +215,24 @@ class Overlay:
 
     def terminate(self) -> None:
         self.root.after(0, self.root.destroy)
+
+    def log_debug(self, entry: str) -> None:
+        """Append a timestamped line to the debug panel (thread-safe). No-op when debug_mode is off."""
+        if not self._debug_mode or self._debug_text is None:
+            return
+        ts = time.strftime("%H:%M:%S") + f".{int(time.time() * 1000) % 1000:03d}"
+        line = f"[{ts}] {entry}"
+
+        def _append() -> None:
+            widget = self._debug_text
+            if widget is None:
+                return
+            widget.insert(tk.END, line + "\n")
+            # Trim oldest lines when the buffer exceeds the cap
+            line_count = int(widget.index(tk.END).split(".")[0]) - 1
+            if line_count > _DEBUG_MAX_LINES:
+                excess = line_count - _DEBUG_MAX_LINES
+                widget.delete("1.0", f"{excess + 1}.0")
+            widget.see(tk.END)
+
+        self.root.after(0, _append)

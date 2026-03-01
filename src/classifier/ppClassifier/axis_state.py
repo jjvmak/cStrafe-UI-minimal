@@ -89,8 +89,14 @@ class AxisState(AxisStateInterface):
             self._reset()
             return "Counter-strafe", cs_time, shot_delay
 
+        if self.held_keys:
+            reason = "still moving"
+        elif self.cs_release_key is not None:
+            reason = "no counter-press"
+        else:
+            reason = "no movement"
         self._reset()
-        return "Bad", None, None
+        return "Bad", None, reason
 
     def _reset(self) -> None:
         self.cs_release_key = None
